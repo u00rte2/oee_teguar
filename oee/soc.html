@@ -1,0 +1,347 @@
+<html>
+<head>
+    <style>
+        .socTitle {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 24pt;
+            font-weight: bold;
+            line-height: 10px;
+            text-align: center;
+            width: auto;
+            margin-bottom: 3px;
+        }
+
+        .commentTable {
+            border: 3px solid grey;
+            border-collapse: collapse;
+            grid-column-start: 1;
+            grid-column-end: 7;
+            grid-row: 5;
+        }
+
+        .socCommentTitle {
+            font-family: monospace;
+            font-size: 12pt;
+            font-weight: bolder;
+            text-align: center;
+        }
+
+        .socComment {
+            font-family: monospace;
+            font-size: 10pt;
+            float: left;
+        }
+
+        .erpnote {
+            background-color: Cyan;
+            font-family: monospace;
+            font-size: 10pt;
+            line-height: 10px;
+            text-align: center;
+            width: auto;
+            margin-top: 10px;
+            margin-bottom: 3px;
+        }
+
+        .erpdata {
+            background-color: Cyan
+        }
+
+        .linecode {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16pt;
+            font-weight: bold;
+            line-height: 10px;
+            text-align: left;
+            width: auto;
+            margin-bottom: 3px;
+        }
+
+        .socHeader {
+            font-family: monospace;
+            font-size: 10pt;
+            display: flex;
+        }
+
+        #headeronly td:first-child {
+            font-weight: bolder;
+            text-align: right;
+        }
+
+        .headerTables {
+            margin: 1rem;
+        }
+
+        .soc {
+            font-family: monospace;
+            font-size: 10pt;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            grid-template-rows: 1in, repeat(5, 1fr);
+        }
+
+        .socfirstcolumn {
+            font-weight: bolder;
+            text-align: left;
+        }
+
+        .soctable {
+            border: 3px solid grey;
+            border-collapse: collapse;
+            white-space: nowrap;
+            height: 80%;
+        }
+
+        .rows {
+            border: 1px solid;
+            border-collapse: collapse;
+            text-align: center;
+            vertical-align: middle;
+            padding: 1.5pt;
+        }
+
+        .headerrows {
+            border: 1px solid;
+            border-collapse: collapse;
+            text-align: left;
+            vertical-align: middle;
+            padding: 1.5pt;
+        }
+
+        .soccaption {
+            font-size: 12pt;
+            font-weight: bold;
+        }
+
+        #socMain {
+            grid-column-start: 1;
+            grid-column-end: 3;
+            grid-row: 2;
+            text-align: left;
+        }
+
+        #socWinder {
+            grid-column-start: 3;
+            grid-column-end: 5;
+            grid-row: 2;
+        }
+
+        table[id="socUser Defined"] {
+            grid-column-start: 5;
+            grid-column-end: 7;
+            grid-row: 2;
+        }
+
+        #socAnnealing {
+            grid-column-start: 3;
+            grid-column-end: 5;
+            grid-row: 3;
+        }
+
+        #socBubble {
+            grid-column-start: 1;
+            grid-column-end: 3;
+            grid-row: 3;
+        }
+
+        table[id="socScreen Pack"] {
+            grid-column-start: 5;
+            grid-column-end: 7;
+            grid-row: 3;
+        }
+
+        table[id="socDie Temps"] {
+            grid-column-start: 1;
+            grid-column-end: 2;
+            grid-row: 4;
+        }
+
+        #socExtruder {
+            grid-column-start: 2;
+            grid-column-end: 7;
+            grid-row: 4;
+        }
+
+        table[id="socMDO Main"] {
+            grid-column-start: 1;
+            grid-column-end: 4;
+            grid-row: 5;
+        }
+
+        table[id="socMDO Other"] {
+            grid-column-start: 4;
+            grid-column-end: 5;
+            grid-row: 5;
+        }               </style>
+</head>
+<body>
+<div class="socTitle"><p>Standard Operating Conditions</p></div>
+<div><p><span class="erpnote">(From ERP)</span></p></div>
+<div><p><span class="linecode">BW-L3</span></p></div>
+<div class="socHeader" id="headeronly">
+    <table class="headerTables">
+        <tbody class="headerrows">
+        <tr>
+            <td>SOC:</td>
+            <td>24050</td>
+        </tr>
+        <tr>
+            <td>Station:</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Revised By:</td>
+            <td>Alexander.Page</td>
+        </tr>
+        <tr>
+            <td>Created:</td>
+            <td>08-06-24 08:06</td>
+        </tr>
+        <tr>
+            <td>Captured:</td>
+            <td>08-06-24 08:05</td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="headerTables">
+        <tbody class="headerrows">
+        <tr>
+            <td>Product Code:</td>
+            <td><span class="erpdata">(PSTX1AW-HD-EVA)</span></td>
+        </tr>
+        <tr>
+            <td>Item Code:</td>
+            <td><span class="erpdata">(AMER02_1.5_PSTX1AW-HD-EVA_SWS_66.25_0_00)</span></td>
+        </tr>
+        <tr>
+            <td>Width:</td>
+            <td>68.25, <span class="erpdata">(66.25)</span></td>
+        </tr>
+        <tr>
+            <td>Mil:</td>
+            <td>1.458, <span class="erpdata">(1.5)</span></td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="headerTables">
+        <tbody class="headerrows">
+        <tr>
+            <td>Rev Level:</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>Revision Date:</td>
+            <td>08-09-24 06:10</td>
+        </tr>
+        <tr>
+            <td>Revision Comments:</td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</header>
+<div class="soc">
+
+    <table class="soctable" id="socWinder">
+        <tr>
+            <caption class="soccaption"><b>Winder</b></caption>
+            <thead class="rows">
+        <tr>
+            <th>Parameters</th>
+            <th>A</th>
+            <th>B</th>
+        </tr>
+        </thead>
+        <tbody class="rows">
+        <tr>
+            <td class="socfirstcolumn">Draw</td>
+            <td>50</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Contact Drive</td>
+            <td>18</td>
+            <td>18</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Center Drive</td>
+            <td>16</td>
+            <td>16</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Lower Rate C Drive</td>
+            <td>15</td>
+            <td>15</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Contact Pressure</td>
+            <td>120</td>
+            <td>120</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Increase Rate</td>
+            <td>-10</td>
+            <td>-10</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Treater KW</td>
+            <td>6.1</td>
+            <td>6.1</td>
+        </tr>
+        </tbody>
+    </table>
+    <table class="soctable" id="socMain">
+        <tr>
+            <caption class="soccaption"><b>Main</b></caption>
+            <thead class="rows">
+        <tr>
+            <th>Parameters</th>
+            <th>Main</th>
+        </tr>
+        </thead>
+        <tbody class="rows">
+        <tr>
+            <td class="socfirstcolumn">Throughput Total</td>
+            <td>2003.1</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Web Speed Ft/Min</td>
+            <td>401.8</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Reversion Time</td>
+            <td>15</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Cage Height</td>
+            <td>83.2</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Air Turning Bars Top</td>
+            <td>100</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Air Turning Bars Bottom</td>
+            <td>100</td>
+        </tr>
+        <tr>
+            <td class="socfirstcolumn">Set Nip Temp</td>
+            <td>80</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div class="soc">
+    <table class="commentTable">
+        <caption class="socCommentTitle">Comment</caption>
+        <thead>
+        <tr class="socComment">
+            <th>No comments exist for this SOC.</th>
+            </th>     </tr>
+        </thead>
+    </table>
+</div>
+</body>
+</html>
