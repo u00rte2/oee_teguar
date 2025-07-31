@@ -111,6 +111,21 @@ def msbtn_downtimeSubEventType(event):
 	return
 
 
+def commit_event(downtimeID, codeID, CreatedBy, note):
+	eventObj = oee.db.runNamedQuery('GMS/Downtime/GetDowntimeCodeByID', { 'ID': codeID })
+	params = { 'ID': downtimeID,
+			   'CreatedBy': CreatedBy,
+			   'EventCode': eventObj.getValueAt(0,'EventCode'),
+			   'Version': eventObj.getValueAt(0,'Version'),
+			   'Note': note,
+			   'IsManual': False
+			   }
+	oee.db.runNamedQuery('GMS/Downtime/UpdateDowntimeEventByID', params)
+	downtimeWindow = system.gui.getWindow("Downtime/Downtime_Main")
+	downtimeWindow.getRootContainer().newDowntimeTrigger = False
+	return
+
+
 def btn_submit(event):
 	self = event.source
 	rc = self.parent
@@ -125,16 +140,99 @@ def btn_submit(event):
 		other_reason = rc.getComponent('txtFldOtherField').text
 	else:
 		codeID = rc.getComponent('Dropdown').selectedValue
-	eventObj = oee.db.runNamedQuery('GMS/Downtime/GetDowntimeCodeByID', { 'ID': codeID })
-	params = { 'ID': rc.downtimeID,
-			   'CreatedBy': "AutoDowntimePopupSubmit",
-			   'EventCode': eventObj.getValueAt(0,'EventCode'),
-			   'Version': eventObj.getValueAt(0,'Version'),
-			   'Note': "{other_reason}-{note}".format(other_reason=other_reason, note=note),
-			   'IsManual': False
-			   }
-	oee.db.runNamedQuery('GMS/Downtime/UpdateDowntimeEventByID', params)
-	downtimeWindow = system.gui.getWindow("Downtime/Downtime_Main")
-	downtimeWindow.getRootContainer().newDowntimeTrigger = False
+	note = "{other_reason}-{note}".format(other_reason=other_reason,note=note)
+	commit_event(rc.downtimeID,codeID,"AutoDowntimePopupSubmit",note)
 	system.nav.closeParentWindow(event)
 	return
+
+
+def reset_changeover_selections(event):
+	rc = system.gui.getParentWindow(event).getRootContainer()
+	selectedCells = rc.getComponent('cnt_changeover').selectedCells
+	for c in range(selectedCells.columnCount):
+		if c > 0:
+			for r in range(selectedCells.rowCount):
+				selectedCells = system.dataset.setValue(selectedCells,r,c,False)
+	rc.getComponent('cnt_changeover').selectedCells = selectedCells
+	getChangeoverLevel(event)
+	return
+
+
+def internalFrameActivated_changeover(event):
+	reset_changeover_selections(event)
+	rc = system.gui.getParentWindow(event).getRootContainer()
+	rc.downtimeEvent = oee.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",{"eventID": rc.downtimeID})
+	return
+
+
+def getChangeoverLevel(event):
+	rc = system.gui.getParentWindow(event).getRootContainer()
+	ds = rc.getComponent('cnt_changeover').selectedCells
+	levels = [ r+1 for r in range(ds.rowCount) for c in range(ds.columnCount) if c > 0 and ds.getValueAt(r,c) ]
+	rc.changeover_level = max(levels) if len(levels) > 0 else 0
+	return
+
+
+def btn_submit_changeover(event):
+	rc = event.source.parent
+	changeover_codes = {1: 8,# 205,
+						2: 9,# 206,
+						3: 10,# 207,
+						4: 11,# 208,
+						5: 12,# 209,
+						6: 13 # 210
+						}
+	selectedCells = rc.getComponent('cnt_changeover').selectedCells
+	changeover_data = rc.getComponent('cnt_changeover').getComponent('tbl_changeover_def').data
+	changeover_level = 0
+	changeover_text = ""
+	for r in range(selectedCells.rowCount):
+		for c in range(selectedCells.columnCount):
+			if c > 0:
+				if selectedCells.getValueAt(r,c):
+					changeover_level = r + 1
+					changeover_text += "{}\n".format(changeover_data.getValueAt(r,c))
+	changeoverCodeID = changeover_codes[changeover_level]
+	notes = rc.getComponent('txtFldNotesField').text
+	note = "{other_reason}-{note}".format(other_reason=notes,note=changeover_text)
+	commit_event(rc.downtimeID,changeoverCodeID,"AutoDowntimePopupSubmit",note)
+	system.nav.closeParentWindow(event)
+	return
+
+
+def tbl_changeover_configureCell(self, value, textValue, selected, rowIndex, colIndex, colName, rowView, colView):
+	if colIndex > 0 and self.parent.selectedCells.getValueAt(rowIndex,colIndex):
+		return {'background': 'yellow'}
+	elif rowView % 2 == 0:
+		return {'background': '#D0D8e8'}
+	else:
+		return {'background': 'e9edf4'}
+
+
+def tbl_changeover_configureHeaderStyle(self, colIndex, colName):
+	from javax.swing import SwingConstants
+	return {
+		'foreground': 'white',
+		'background': '79,129,189',
+		'horizontalAlignment': SwingConstants.CENTER}
+
+
+def tbl_changeover_onMouseClick(self, rowIndex, colIndex, colName, value, event):
+	if colIndex > 0:
+		if len(value) > 0:
+			cells_used = [ idx for idx in range(self.data.rowCount) if self.data.getValueAt(idx, colIndex) != "" ]
+			selectedCells =  self.parent.selectedCells
+			currentValue = selectedCells.getValueAt(rowIndex, colIndex)
+			newValue = not currentValue
+			for rowID in cells_used:
+				if currentValue:
+					selectedCells = system.dataset.setValue(selectedCells, rowID, colIndex, False)
+				else:
+					if rowID == rowIndex:
+						selectedCells = system.dataset.setValue(selectedCells, rowID, colIndex, newValue)
+					else:
+						selectedCells = system.dataset.setValue(selectedCells, rowID, colIndex, currentValue)
+			self.parent.selectedCells = selectedCells
+		getChangeoverLevel(event)
+	return
+

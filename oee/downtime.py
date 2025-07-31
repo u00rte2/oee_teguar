@@ -17,16 +17,21 @@ def downtimeWatchdog():
 	lineNumber = system.tag.readBlocking(["[client]line_info/lineNumber"])[0].value
 	triggerPath = "[default]OT/SOC/{}/Downtime/NewDownTimeTrigger_L{}".format(providerRemote, lineNumber)
 	if system.tag.readBlocking([triggerPath])[0].value:
-		windows = system.gui.getOpenedWindowNames()
-		if "Downtime/AutoDowntimePopup" in windows:
-			currentWindow = system.tag.readBlocking(["[System]Client/User/CurrentWindow"])[0].value
-			if currentWindow != "Downtime/AutoDowntimePopup":
-				# Why not????????
-				print "Downtime/AutoDowntimePopup is open but not current"
+		eventIdPath = "[default]OT/SOC/{}/Downtime/NewDownTimeID_L{}".format(providerRemote,lineNumber)
+		eventID = system.tag.readBlocking([eventIdPath])[0].value
+		params = {"eventID": eventID}
+		eventData = system.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",params)
+		if eventData.getValueAt(0,"EndTime") is None:
+			windows = system.gui.getOpenedWindowNames()
+			if eventData.getValueAt(0,"EventCode") == 101:  # Changeover
+				if "Downtime/AutoChangeoverPopup" not in windows:
+					window = system.nav.openWindow("Downtime/AutoChangeoverPopup")
+				elif "Downtime/AutoDowntimePopup" not in windows:
+					window = system.nav.openWindow("Downtime/AutoDowntimePopup")
 		else:
-			# window is not open when it should be
-			print "Downtime/AutoDowntimePopup is not open when it should be"
-		window = system.nav.openWindow("Downtime/AutoDowntimePopup")
+			# Event has been closed, turn off trigger
+			downtimeWindow = system.gui.getWindow("Downtime/Downtime_Main")
+			downtimeWindow.getRootContainer().newDowntimeTrigger = False
 	return
 
 
@@ -51,7 +56,7 @@ def shutdownIntercept(event):
 		return False
 
 	windows = system.gui.getOpenedWindowNames()
-	if "Downtime/AutoDowntimePopup" in windows:
+	if "Downtime/AutoDowntimePopup" in windows or "Downtime/AutoChangeoverPopup" in windows:
 		if confirmExit():
 			pass
 		else:
@@ -361,8 +366,14 @@ def newDowntimeTrigger(event):
 	if event.propertyName == "newDowntimeTrigger":
 		print "newDowntimeTrigger: ", event.newValue
 		if event.newValue:
-			window = system.nav.openWindow("Downtime/AutoDowntimePopup")
-			system.nav.centerWindow(window)
+			eventID = system.gui.getParentWindow(event).getComponentForPath('Root Container').downtimeID
+			params = { "eventID": eventID }
+			eventData = system.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",params)
+			if eventData.getValueAt(0,"EventCode") == 101: # Changeover
+				window = system.nav.openWindow("Downtime/AutoChangeoverPopup")
+			else:
+				window = system.nav.openWindow("Downtime/AutoDowntimePopup")
+			# system.nav.centerWindow(window)
 	return
 
 
