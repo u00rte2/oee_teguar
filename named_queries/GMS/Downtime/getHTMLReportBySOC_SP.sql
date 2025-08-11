@@ -1,0 +1,1 @@
+EXEC soc.getHTMLReportBySOC_SP :socID
