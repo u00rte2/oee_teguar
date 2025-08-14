@@ -5,6 +5,7 @@ Select
 	dc.[Category],
 	de.EventCode,
 	de.OriginalEventCode,
+	(SELECT [Name] FROM [soc].[DowntimeCodes] WHERE [EventCode] = de.OriginalEventCode) AS OriginalEventName,
 	dc.ParentEventCode,
 	de.EventCodeVersion,
 	de.OriginalEventCodeVersion,

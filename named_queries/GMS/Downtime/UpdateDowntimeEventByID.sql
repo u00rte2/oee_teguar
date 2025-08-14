@@ -4,5 +4,6 @@ SET CreatedBy = :CreatedBy,
 	EventCodeVersion = :Version,
 	[Timestamp] = GetDate(),
 	Note = :Note,
+    changeoverDetail = :changeoverDetail,
 	IsManual = :IsManual
 WHERE ID = :ID

@@ -1,5 +1,6 @@
 SELECT	de.*,
 		dc.ParentEventCode,
+		dc.[Name],
 		CASE
 			WHEN de.EndTime IS NULL
 					THEN 'current'
