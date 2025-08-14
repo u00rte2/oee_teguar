@@ -154,3 +154,9 @@ def get_glass_network_provider():
 	else:
 		glass_provider = "Ignition-cnfsql04_default"
 	return glass_provider
+
+
+def round_half_up(n, decimals=5):
+	import math
+	multiplier = 10**decimals
+	return math.floor(n * multiplier + 0.5) / multiplier

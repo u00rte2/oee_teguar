@@ -1,6 +1,8 @@
 def internalFrameActivated(event):
 	resetTimer(event)
 	resetStates(event)
+	rc = system.gui.getParentWindow(event).getRootContainer()
+	rc.downtimeEvent = oee.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",{"eventID": rc.downtimeID})
 	return
 
 
@@ -111,13 +113,14 @@ def msbtn_downtimeSubEventType(event):
 	return
 
 
-def commit_event(downtimeID, codeID, CreatedBy, note):
+def commit_event(downtimeID, codeID, CreatedBy, note, changeover_text):
 	eventObj = oee.db.runNamedQuery('GMS/Downtime/GetDowntimeCodeByID', { 'ID': codeID })
 	params = { 'ID': downtimeID,
 			   'CreatedBy': CreatedBy,
 			   'EventCode': eventObj.getValueAt(0,'EventCode'),
 			   'Version': eventObj.getValueAt(0,'Version'),
 			   'Note': note,
+			   'changeoverDetail': changeover_text,
 			   'IsManual': False
 			   }
 	oee.db.runNamedQuery('GMS/Downtime/UpdateDowntimeEventByID', params)
@@ -141,7 +144,8 @@ def btn_submit(event):
 	else:
 		codeID = rc.getComponent('Dropdown').selectedValue
 	note = "{other_reason}-{note}".format(other_reason=other_reason,note=note)
-	commit_event(rc.downtimeID,codeID,"AutoDowntimePopupSubmit",note)
+	changeover_text = ""
+	commit_event(rc.downtimeID,codeID,"AutoDowntimePopupSubmit",note,changeover_text)
 	system.nav.closeParentWindow(event)
 	return
 
@@ -186,16 +190,16 @@ def btn_submit_changeover(event):
 	changeover_data = rc.getComponent('cnt_changeover').getComponent('tbl_changeover_def').data
 	changeover_level = 0
 	changeover_text = ""
-	for r in range(selectedCells.rowCount):
-		for c in range(selectedCells.columnCount):
-			if c > 0:
+	for c in range(selectedCells.columnCount):
+		colName = selectedCells.columnNames[c]
+		if c > 0:
+			for r in range(selectedCells.rowCount):
 				if selectedCells.getValueAt(r,c):
 					changeover_level = r + 1
-					changeover_text += "{}\n".format(changeover_data.getValueAt(r,c))
+					changeover_text += "{}: {}\n".format(colName,changeover_data.getValueAt(r,c))
 	changeoverCodeID = changeover_codes[changeover_level]
-	notes = rc.getComponent('txtFldNotesField').text
-	note = "{other_reason}-{note}".format(other_reason=notes,note=changeover_text)
-	commit_event(rc.downtimeID,changeoverCodeID,"AutoDowntimePopupSubmit",note)
+	note = "{notes}".format(notes=rc.getComponent('txtFldNotesField').text)
+	commit_event(rc.downtimeID,changeoverCodeID,"AutoChangeoverPopupSubmit",note,changeover_text)
 	system.nav.closeParentWindow(event)
 	return
 

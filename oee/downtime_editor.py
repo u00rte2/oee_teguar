@@ -1,6 +1,6 @@
 PLANNED_PARENT_CODE = 2
 UNPLANNED_PARENT_CODE = 3
-
+DO_NOT_EDIT = (0,101,205,206,207,208,209,210)
 def readMe():
 	"""
 
@@ -31,7 +31,6 @@ def resetDetailComponents(event):
 	cntDetail.getComponent("val_description").text = ""
 	cntDetail.getComponent("val_note").text = ""
 	cntDetail.getComponent("val_orderNumber").text = ""
-	cntDetail.getComponent("val_originalCreatedBy").text = ""
 	cntDetail.getComponent("val_parentType").text = ""
 	cntDetail.getComponent("val_shift").text = ""
 	cntDetail.getComponent("chk_manual").selected = False
@@ -66,27 +65,29 @@ def tblEvents_propertyChange(event):
 			# Selected Event From Table
 			print 'tblEvents_propertyChange'
 			data = self.data
+			eventCode = data.getValueAt(selectedRow,"EventCode")
 			parentcode = data.getValueAt(selectedRow,"ParentEventCode")
 			cntDetail = rc.getComponent("cntDetail")
 			cntDetail.getComponent("val_category").text = data.getValueAt(selectedRow, "Category")
 			cntDetail.getComponent("val_description").text = data.getValueAt(selectedRow, "Description")
 			cntDetail.getComponent("val_note").text = data.getValueAt(selectedRow, "Note")
+			cntDetail.getComponent("val_changeoverDetail").text = data.getValueAt(selectedRow,"changeoverDetail")
 			cntDetail.getComponent("val_orderNumber").text = data.getValueAt(selectedRow, "WorkOrderUUID")
-			cntDetail.getComponent("val_originalCreatedBy").text = data.getValueAt(selectedRow, "OriginalCreatedBy")
 			cntDetail.getComponent("val_parentType").text = data.getValueAt(selectedRow, "ParentEventName")
-			cntDetail.getComponent("val_parentCode").value = parentcode
 			cntDetail.getComponent("val_eventName").text = data.getValueAt(selectedRow,"Name")
+			cntDetail.getComponent("val_eventCode").value = eventCode
+			cntDetail.getComponent("val_createdBy").text = data.getValueAt(selectedRow,"CreatedBy")
+			cntDetail.getComponent("val_eventVersion").intValue = data.getValueAt(selectedRow,"EventCodeVersion")
+			cntDetail.getComponent("val_originalEventName").text = data.getValueAt(selectedRow,"OriginalEventName")
+			cntDetail.getComponent("val_originalEventCode").value = data.getValueAt(selectedRow,"OriginalEventCode")
 			cntDetail.getComponent("val_shift").text = data.getValueAt(selectedRow, "Shift")
 			cntDetail.getComponent("chk_manual").selected = data.getValueAt(selectedRow, "IsManual")
 			cntDetail.getComponent("chk_downtime").selected = data.getValueAt(selectedRow, "IsDowntime")
 			cntDetail.getComponent("chk_planned").selected = data.getValueAt(selectedRow, "IsPlanned")
 			cntDetail.getComponent("chk_changeover").selected = data.getValueAt(selectedRow,"IsChangeoverDowntime")
-			cntDetail.getComponent("val_eventCode").value = data.getValueAt(selectedRow,"EventCode")
-			cntDetail.getComponent("val_createdBy").text = data.getValueAt(selectedRow,"CreatedBy")
-			cntDetail.getComponent("val_eventVersion").value = data.getValueAt(selectedRow,"EventCodeVersion")
 			# Pre-populate data in cntEdit container
 			cntEdit = rc.getComponent("cntEdit")
-			enableEdits = False if data.getValueAt(selectedRow, "Name") == "Running" else True
+			enableEdits = False if eventCode in DO_NOT_EDIT else True
 			cntEdit.visible = enableEdits
 			if enableEdits:
 				print "enableEdits"
@@ -173,7 +174,7 @@ def btn_submit(event):
 		params = { "ID": cntEdit.getComponent("valID").value,
 				   "EventCode": cntEdit.getComponent("ddNewDowntimeEvent").selectedValue,
 				   "Version": cntDetail.getComponent("val_eventVersion").intValue + 1,
-				   "CreatedBy": cntDetail.getComponent("val_createdBy").text,
+				   "CreatedBy": system.tag.readBlocking(["[System]Client/User/Username"])[0].value,
 				   "Note": cntEdit.getComponent("valNote").text,
 				   "IsManual": cntDetail.getComponent("chk_manual").selected
 				   }

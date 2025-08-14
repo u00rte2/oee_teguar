@@ -1,3 +1,5 @@
+logger = system.util.getLogger("OEE_TEGUAR")
+
 def internalFrameActivated(event):
 	updateChartData()
 	# # Kevon Code
@@ -13,6 +15,14 @@ def internalFrameActivated(event):
 
 
 def downtimeWatchdog():
+	def closeWindows():
+		windowNames = ["Downtime/DowntimeEntryEditor"
+					   ,"Downtime/ManualDowntimePopup"
+					   ,"SOC/HTMLSOCPopup"
+					   ]
+		for windowName in windowNames:
+			system.nav.closeWindow(windowName)
+		return
 	providerRemote = system.tag.readBlocking(["[client]line_info/providerRemote"])[0].value
 	lineNumber = system.tag.readBlocking(["[client]line_info/lineNumber"])[0].value
 	triggerPath = "[default]OT/SOC/{}/Downtime/NewDownTimeTrigger_L{}".format(providerRemote, lineNumber)
@@ -21,17 +31,15 @@ def downtimeWatchdog():
 		eventID = system.tag.readBlocking([eventIdPath])[0].value
 		params = {"eventID": eventID}
 		eventData = system.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",params)
-		if eventData.getValueAt(0,"EndTime") is None:
+		if eventData.getValueAt(0,"ParentEventCode") == 1:  # Generic event
+			closeWindows()
 			windows = system.gui.getOpenedWindowNames()
 			if eventData.getValueAt(0,"EventCode") == 101:  # Changeover
 				if "Downtime/AutoChangeoverPopup" not in windows:
 					window = system.nav.openWindow("Downtime/AutoChangeoverPopup")
-				elif "Downtime/AutoDowntimePopup" not in windows:
+			elif eventData.getValueAt(0,"EventCode") in (100,102,103,104):  # Non-Changeover
+				if "Downtime/AutoDowntimePopup" not in windows:
 					window = system.nav.openWindow("Downtime/AutoDowntimePopup")
-		else:
-			# Event has been closed, turn off trigger
-			downtimeWindow = system.gui.getWindow("Downtime/Downtime_Main")
-			downtimeWindow.getRootContainer().newDowntimeTrigger = False
 	return
 
 
@@ -52,13 +60,20 @@ def shutdownIntercept(event):
 		messageType = pane.WARNING_MESSAGE
 		result = pane.showInputDialog(frame,message,title,messageType)
 		if result == "exit":
-			return True
-		return False
+			return "exit"
+		elif result == "close":
+			return "close"
+		return None
 
 	windows = system.gui.getOpenedWindowNames()
 	if "Downtime/AutoDowntimePopup" in windows or "Downtime/AutoChangeoverPopup" in windows:
-		if confirmExit():
+		exitCode = confirmExit()
+		if exitCode == "exit":
 			pass
+		elif exitCode == "close":
+			event.cancel = 1
+			system.nav.closeWindow("Downtime/AutoChangeoverPopup")
+			system.nav.closeWindow("Downtime/AutoDowntimePopup")
 		else:
 			event.cancel = 1
 	return
@@ -347,13 +362,16 @@ def getChartToolTipText(self,seriesIndex,selectedTimeStamp,timeDiff,selectedStat
 				return downtime.getValueAt( idx, "orderNumber" )
 		return "Order Number Not Found"
 
-	# Replace seriesName: "EventCode" with actual event name.
-	events = system.dataset.toPyDataSet(self.parent.downtime)
-	eventName = getEventName(events, selectedStatus)
-	customString = defaultString.replace("EventCode", eventName)
-	# Add order number
-	customString = "{orderNUmber}: {existingString}".format( orderNUmber=getOrderNumber(), existingString=customString )
-	return customString
+	if selectedStatus < 1000:
+		# Replace seriesName: "EventCode" with actual event name.
+		events = system.dataset.toPyDataSet(self.parent.downtime)
+		eventName = getEventName(events, selectedStatus)
+		customString = defaultString.replace("EventCode", eventName)
+		# Add order number
+		customString = "{orderNumber}: {existingString}".format( orderNumber=getOrderNumber(), existingString=customString )
+		return customString
+	else:
+		return "Order Number: {}, Duration: {} Hours".format(selectedStatus, oee.util.round_half_up(timeDiff/3600.0, decimals=1))
 
 
 def root_container_propertyChange(event):
