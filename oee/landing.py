@@ -64,10 +64,12 @@ def visionWindowOpened(event):
 			system.tag.writeBlocking([ "[client]user/rights" ],[ "edit" ])
 		else:
 			system.tag.writeBlocking([ "[client]user/rights" ],[ "view" ])
+		hostConfig = system.tag.readBlocking("[client]user/hostConfig")[0].value
+		rc.getComponent('cntSimulateLine').getComponent('tbl_hostConfig').data = hostConfig
 	else:
 		rc.getComponent("cntSimulateLine").visible = False
 		system.gui.messageBox("Application will now close.","Unauthorized User!")
-		#system.util.exit()
+		system.util.exit()
 	return
 
 

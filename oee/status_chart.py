@@ -52,3 +52,60 @@ def annotateTimestamp(event):
 				else:
 					generateLabel(series, item, lastItemIndex)
 	return
+
+
+def getChartToolTipText(self,seriesIndex,selectedTimeStamp,timeDiff,selectedStatus,data,properties,defaultString):
+	"""
+	Returns a formatted tool tip String.
+
+	Arguments:
+		self: A reference to the component that is invoking this function.
+		seriesIndex: The series index corresponding to the column in the
+					 series dataset.
+		selectedTimeStamp: The time stamp corresponding to the x value of the
+						   displayed tooltip. The time stamp is the number of seconds since the
+						   epoch.
+		timeDiff: The width of the current status interval measured in seconds
+				  since the epoch.
+		selectedStatus: The status value corresponding to the x value of the
+						displayed tooltip.
+		data: The series dataset as a PyDataset.
+		properties: The series properties dataset as a PyDataset.
+		defaultString: The default tooltip string.
+	"""
+	# return defaultString
+	# Break the default string apart and extract the start date and the end date
+
+	def getEventName(events, eventCode):
+		for row in events:
+			if row["EventCode"] == eventCode:
+				parentName = row["ParentEventName"]
+				if parentName == "Running" or parentName == "Generic Downtime":
+					return row["Name"]
+				else:
+					return "{}: {}: {}".format( parentName, row["Category"], row["Name"] )
+		return "{} Not Found".format( eventCode )
+
+	def getOrderNumber():
+		startingIndex = defaultString.index('(') + 1
+		endingIndex = defaultString.index(')')
+		datetimes = defaultString[ startingIndex: endingIndex ].split(',')
+		startDate = system.date.parse(datetimes[ 0 ] + datetimes[ 1 ],'MM/dd/yy hh:mm a')
+		downtime = self.parent.downtime
+		for idx in range(downtime.rowCount):
+			chart_date_string = system.date.format(startDate, "MM/dd/yy HH:mm a")
+			event_date_string = system.date.format(downtime.getValueAt( idx, "StartTime"), "MM/dd/yy HH:mm a")
+			if chart_date_string == event_date_string:
+				return downtime.getValueAt( idx, "orderNumber" )
+		return "Order Number Not Found"
+
+	if selectedStatus < 1000:
+		# Replace seriesName: "EventCode" with actual event name.
+		events = system.dataset.toPyDataSet(self.parent.downtime)
+		eventName = getEventName(events, selectedStatus)
+		customString = defaultString.replace("EventCode", eventName)
+		# Add order number
+		customString = "{orderNumber}: {existingString}".format( orderNumber=getOrderNumber(), existingString=customString )
+		return customString
+	else:
+		return "Order Number: {}, Duration: {} Hours".format(selectedStatus, oee.util.round_half_up(timeDiff/3600.0, decimals=1))
