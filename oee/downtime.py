@@ -34,12 +34,13 @@ def downtimeWatchdog():
 		if eventData.getValueAt(0,"ParentEventCode") == 1:  # Generic event
 			closeWindows()
 			windows = system.gui.getOpenedWindowNames()
-			if eventData.getValueAt(0,"EventCode") == 101:  # Changeover
+			window_params = {"downtimeID": eventID,"downtimeEvent": eventData}
+			if eventData.getValueAt(0,"EventCode") in (101,105,106,107):  # Changeover
 				if "Downtime/AutoChangeoverPopup" not in windows:
-					window = system.nav.openWindow("Downtime/AutoChangeoverPopup")
+					window = system.nav.openWindow("Downtime/AutoChangeoverPopup", window_params)
 			elif eventData.getValueAt(0,"EventCode") in (100,102,103,104):  # Non-Changeover
 				if "Downtime/AutoDowntimePopup" not in windows:
-					window = system.nav.openWindow("Downtime/AutoDowntimePopup")
+					window = system.nav.openWindow("Downtime/AutoDowntimePopup", window_params)
 	return
 
 
@@ -219,11 +220,11 @@ def updateChartData():
 		lastState = py.getValueAt( py.rowCount - 1, 1)
 		chartData = system.dataset.addRow(py, [system.date.now(), lastState])
 		chartProperties = getSeriesProperties(args["seriesName"])
-	system.tag.writeBlocking(["[client]downtime/chartData",
-							  "[client]downtime/chartProperties"],
-							 [chartData,
-							 chartProperties
-							  ])
+		system.tag.writeBlocking(["[client]downtime/chartData",
+								  "[client]downtime/chartProperties"],
+								 [chartData,
+								 chartProperties
+								  ])
 	compare_to_live = True
 	if compare_to_live:
 		glass_db = oee.db.get_glass_db()
@@ -382,15 +383,16 @@ def root_container_propertyChange(event):
 
 def newDowntimeTrigger(event):
 	if event.propertyName == "newDowntimeTrigger":
-		print "newDowntimeTrigger: ", event.newValue
+		print "newDowntimeTrigger: ", event.newValue, system.date.now()
 		if event.newValue:
 			eventID = system.gui.getParentWindow(event).getComponentForPath('Root Container').downtimeID
-			params = { "eventID": eventID }
-			eventData = system.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",params)
-			if eventData.getValueAt(0,"EventCode") == 101: # Changeover
-				window = system.nav.openWindow("Downtime/AutoChangeoverPopup")
+			db_params = { "eventID": eventID }
+			eventData = system.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",db_params)
+			window_params = {"downtimeID": eventID, "downtimeEvent": eventData}
+			if eventData.getValueAt(0,"EventCode") in (101,105,106,107): # Changeover
+				window = system.nav.openWindow("Downtime/AutoChangeoverPopup", window_params)
 			else:
-				window = system.nav.openWindow("Downtime/AutoDowntimePopup")
+				window = system.nav.openWindow("Downtime/AutoDowntimePopup", window_params)
 			# system.nav.centerWindow(window)
 	return
 
