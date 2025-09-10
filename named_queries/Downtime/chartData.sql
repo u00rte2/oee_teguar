@@ -5,6 +5,7 @@ FROM [soc].[DowntimeEvents] AS dt
 WHERE sourceID = :sourceID
 	AND plantID = :plantID
 	AND lineNumber = :lineNumber
+    AND retired = 0
 	AND StartTime > :startDate
 	AND EndTime IS NULL
 UNION
@@ -15,5 +16,6 @@ FROM [soc].[DowntimeEvents] AS dt
 WHERE sourceID = :sourceID
 	AND plantID = :plantID
 	AND lineNumber = :lineNumber
+    AND retired = 0
 	AND StartTime > :startDate
 ORDER BY 1

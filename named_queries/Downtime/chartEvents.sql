@@ -32,5 +32,6 @@ LEFT JOIN [soc].[DowntimeCodes] c
 WHERE sourceID =  :sourceID
 	AND plantID = :plantID
 	AND lineNumber = :lineNumber
+	AND retired = 0
 	AND eventTime > :startDate
 ORDER BY 1

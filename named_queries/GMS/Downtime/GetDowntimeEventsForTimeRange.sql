@@ -1,4 +1,4 @@
-Select
+SELECT
 	de.ID,
 	de.LocationName,
 	(SELECT [Name] FROM [soc].[DowntimeCodes] WHERE [EventCode] = dc.[ParentEventCode]) AS ParentEventName,
@@ -26,13 +26,13 @@ Select
 	de.EndTime,
 	CASE
 		WHEN de.EndTime IS NULL
-            THEN CONCAT(DATEDIFF(second, de.StartTime, CURRENT_TIMESTAMP)/ 3600 % 60, ':',
-                        DATEDIFF(second, de.StartTime, CURRENT_TIMESTAMP)/ 60 % 60, ':',
-                        DATEDIFF(second, de.StartTime, CURRENT_TIMESTAMP) % 60
+            THEN CONCAT(DATEDIFF(SECOND, de.StartTime, CURRENT_TIMESTAMP)/ 3600, ':',
+                        DATEDIFF(SECOND, de.StartTime, CURRENT_TIMESTAMP)/ 60 % 60, ':',
+                        DATEDIFF(SECOND, de.StartTime, CURRENT_TIMESTAMP) % 60
                         )
-            ELSE CONCAT(DATEDIFF(second, de.StartTime, de.EndTime)/ 3600 % 60, ':',
-                        DATEDIFF(second, de.StartTime, de.EndTime)/ 60 % 60, ':',
-                        DATEDIFF(second, de.StartTime, de.EndTime) % 60
+            ELSE CONCAT(DATEDIFF(SECOND, de.StartTime, de.EndTime)/ 3600, ':',
+                        DATEDIFF(SECOND, de.StartTime, de.EndTime)/ 60 % 60, ':',
+                        DATEDIFF(SECOND, de.StartTime, de.EndTime) % 60
                         )
     END AS Duration,
 	de.OriginalEndTime,
@@ -40,14 +40,14 @@ Select
 	de.RunUUID,
 	de.Shift,
 	de.Note,
-    de.changeoverDetail,
+	de.changeoverDetail,
 	de.[Timestamp],
 	de.[t_stamp]
-From soc.DowntimeEvents de
-Left Join soc.DowntimeCodes dc
-On de.EventCode = dc.EventCode
-Where LocationName like :LocationName
-And ((EndTime > :StartTime and StartTime < :EndTime)
-	or
-	(EndTime is null and StartTime < :EndTime))
-Order By StartTime DESC
+FROM soc.DowntimeEvents de
+LEFT JOIN soc.DowntimeCodes dc
+ON de.EventCode = dc.EventCode
+WHERE de.LocationName LIKE :LocationName
+        AND de.retired = 0
+        AND ((de.EndTime > :StartTime AND de.StartTime < :EndTime)
+	    OR (de.EndTime IS NULL AND de.StartTime < :EndTime))
+ORDER BY de.StartTime DESC

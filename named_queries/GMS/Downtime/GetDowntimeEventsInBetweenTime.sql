@@ -1,7 +1,8 @@
-Select *
-From soc.DowntimeEvents
-Where LocationName like :LocationName
-And ((EndTime > :StartTime and StartTime < :EndTime)
-	or
-	(EndTime is null and StartTime < :EndTime))
-Order By StartTime ASC
+SELECT *
+FROM soc.DowntimeEvents
+WHERE LocationName LIKE :LocationName
+    AND retired = 0
+    AND ((EndTime > :StartTime AND StartTime < :EndTime)
+	OR
+	(EndTime IS NULL AND StartTime < :EndTime))
+ORDER BY StartTime ASC
