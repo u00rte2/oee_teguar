@@ -2,7 +2,8 @@ def internalFrameActivated(event):
 	resetTimer(event)
 	resetStates(event)
 	rc = system.gui.getParentWindow(event).getRootContainer()
-	rc.downtimeEvent = oee.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",{"eventID": rc.downtimeID})
+	print "AutoDowntimeEvent: ", rc.downtimeID
+	# rc.downtimeEvent = oee.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",{"eventID": rc.downtimeID})
 	return
 
 
@@ -158,14 +159,15 @@ def reset_changeover_selections(event):
 			for r in range(selectedCells.rowCount):
 				selectedCells = system.dataset.setValue(selectedCells,r,c,False)
 	rc.getComponent('cnt_changeover').selectedCells = selectedCells
-	getChangeoverLevel(event)
+	rc.changeover_level = 0
 	return
 
 
 def internalFrameActivated_changeover(event):
 	reset_changeover_selections(event)
 	rc = system.gui.getParentWindow(event).getRootContainer()
-	rc.downtimeEvent = oee.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",{"eventID": rc.downtimeID})
+	print "AutoChangeoverEvent: ", rc.downtimeID
+	# rc.downtimeEvent = oee.db.runNamedQuery("GMS/Downtime/GetDowntimeEventByID",{"eventID": rc.downtimeID})
 	return
 
 
@@ -199,6 +201,17 @@ def btn_submit_changeover(event):
 					changeover_text += "{}: {}\n".format(colName,changeover_data.getValueAt(r,c))
 	changeoverCodeID = changeover_codes[changeover_level]
 	note = "{notes}".format(notes=rc.getComponent('txtFldNotesField').text)
+	commit_event(rc.downtimeID,changeoverCodeID,"AutoChangeoverPopupSubmit",note,changeover_text)
+	system.nav.closeParentWindow(event)
+	return
+
+
+def btn_paper_change(event):
+	rc = event.source.parent
+	note = "{notes}".format(notes=rc.getComponent('txtFldNotesField').text)
+	changeover_level = 1
+	changeover_text = "Paper Change"
+	changeoverCodeID = 8
 	commit_event(rc.downtimeID,changeoverCodeID,"AutoChangeoverPopupSubmit",note,changeover_text)
 	system.nav.closeParentWindow(event)
 	return
@@ -239,4 +252,3 @@ def tbl_changeover_onMouseClick(self, rowIndex, colIndex, colName, value, event)
 			self.parent.selectedCells = selectedCells
 		getChangeoverLevel(event)
 	return
-
