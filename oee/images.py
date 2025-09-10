@@ -1,3 +1,5 @@
+from javax.imageio import ImageIO
+from java.io import ByteArrayInputStream
 
 def getImageFromFile():
 	image_bytes = None
@@ -7,8 +9,8 @@ def getImageFromFile():
 	return image_bytes
 
 
-def getImageFromGlass(itemCode):
-	import system
+def getImageFromDatabase(itemCode):
+#	import system
 	database = "Glass"
 	qry = "SELECT imageBlob FROM soc.images WHERE itemCode = '{}'".format(itemCode)
 	image_bytes = system.db.runQuery(qry, database)
@@ -28,57 +30,27 @@ def main():
 	return
 
 
-#################################
-
-
 def repaint(event):
 	# itemCode = "CNG_Logo"
 	# itemCode = "Pet_Food"
 	# Add custom property: usePetFood then bind to check box
-	if event.source.parent.getComponent('chkPetFood').selected:
+	#print 'repaint'
+	if event.source.trigger:
 		itemCode = "Pet_Food"
 	else:
 		itemCode = "CNG_Logo"
-
-
 	g = event.graphics
-	cachedName = event.source.getClientProperty("img-bytes-cached-name")
+	cachedName = event.source.getClientProperty("image_bytes_cached_name")
+	image_bytes = event.source.getClientProperty("image_bytes_cached")
+	if itemCode != cachedName or not image_bytes:
+		print "Image not cached - load from database"
+		image_bytes = getImageFromDatabase(itemCode)[0][0]
+		event.source.putClientProperty("image_bytes_cached",image_bytes)
+		event.source.putClientProperty("image_bytes_cached_name",itemCode)
 
-	# bytes = event.source.getClientProperty("img-bytes-cached")
-	# if itemCode!=cachedName or not bytes:
-	#	print "Image not cached - load from database"
-	#	bytes = getImageFromGlass(itemCode)
-	#	event.source.putClientProperty("img-bytes-cached",bytes)
-	#	event.source.putClientProperty("img-bytes-cached-name",itemCode)
-
-	bytes = getImageFromGlass(itemCode)[0][0]
-
-	if bytes:
-		from javax.imageio import ImageIO
-		from java.io import ByteArrayInputStream
-
+	# image_bytes = getImageFromDatabase(itemCode)[0][0]
+	if image_bytes:
 		#	from java.awt.geom import AffineTransform
 		#	scale = AffineTransform()
-		image = ImageIO.read(ByteArrayInputStream(bytes))
-
+		image = ImageIO.read(ByteArrayInputStream(image_bytes))
 		g.drawImage(image,0,0,event.width,event.height,event.source)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if __name__ == "__main__":
-	main()
-
-
-
