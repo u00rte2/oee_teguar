@@ -100,6 +100,7 @@ def validUser(hostConfig, clientHost):
 			tagvalues.append("edit")
 			system.tag.writeBlocking(tagpaths, tagvalues)
 			get_provider()
+			getLineType()
 			return True
 	return False
 
@@ -141,6 +142,7 @@ def updateClientTags(pyds, idx):
 	tagvalues = [ pyds[idx][colName] for colName in pyds.columnNames ]
 	system.tag.writeBlocking(tagpaths, tagvalues)
 	get_provider()
+	getLineType()
 	oee.downtime.updateChartData()
 	return
 
@@ -186,4 +188,14 @@ def btn_expand(event):
 	else:
 		mode = "retract"
 	window.setSize( sizes[mode]["width"], sizes[mode]["height"] )
+	return
+
+
+def getLineType():
+	plantID = system.tag.readBlocking("[client]line_info/plantID")[0].value
+	castLinePlants = [6, 9]
+	lineType = "blown"
+	if plantID in castLinePlants:
+		lineType = "cast"
+	system.tag.writeBlocking(["[client]line_info/lineType"],[lineType])
 	return

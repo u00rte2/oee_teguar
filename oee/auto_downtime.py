@@ -179,6 +179,17 @@ def getChangeoverLevel(event):
 	return
 
 
+def getChangeoverDetail(data, selectedCells):
+	changeover_level = 0
+	changeover_detail = ""
+	for c in range(1, selectedCells.columnCount):
+		colName = selectedCells.columnNames[c]
+		for r in range(selectedCells.rowCount):
+			if selectedCells.getValueAt(r,c):
+				changeover_level = r + 1
+				changeover_detail += "{}: {}\n".format(colName, data.getValueAt(r,c))
+	return changeover_level, changeover_detail
+
 def btn_submit_changeover(event):
 	rc = event.source.parent
 	changeover_codes = {1: 8,# 205,
@@ -226,6 +237,121 @@ def tbl_changeover_configureCell(self, value, textValue, selected, rowIndex, col
 		return {'background': 'e9edf4'}
 
 
+def tbl_changeover_codes_blown(self,value,textValue,selected,rowIndex,colIndex,colName,rowView,colView):
+
+	blown_data = {
+		0: { # Changeover Level 1
+			0: "<html><br>CO1<br><br>" # Code
+			,1: "<html>Below 10"  # Size
+			,2: "<html>Below 1 mil"  # Gauge
+			,3: ""  # Wind
+			,4: ""  # Resins
+			,5: ""  # Color
+			,6: ""  # Barrier
+			,7: ""  # Purge
+			,8: ""  # Seal
+			,9: ""  # Equipment
+			,10: ""  # MDO
+			}
+		,1: {  # Changeover Level 2
+			0: "<html>CO2"  # Code
+			,1: "<html>Above 10"  # Size
+			,2: "<html>Above 1 mil"  # Gauge
+			,3: "<html>Wind<br>Config<br>Change"  # Wind
+			#,4: "<html><ul><li>Up to 2 Mains</li><li>Up to 4 Hoppers<li>Any Additive % Changes</li></ul>"  # Resins
+			#,4: "<html>Up to 2 Mains<hr>Up to 4 Hoppers<hr>Any Additive % Changes"  # Resins
+			,4: "<html>Up to 2 Mains<br>Up to 4 Hoppers<br>Any Additive % Changes"  # Resins
+			,5: "<html>Into color"  # Color
+			,6: ""  # Barrier
+			,7: ""  # Purge
+			,8: ""  # Seal
+			,9: "<html>Into/Out of<br>Secondary Treaters<br>or Annealing"  # Equipment
+			,10: ""  # MDO
+		}
+		,2: {  # Changeover Level 3
+			0: "<html>CO3"  # Code
+			,1: ""  # Size
+			,2: ""  # Gauge
+			,3: ""  # Wind
+			,4: "<html>Up to 3 Mains<br>More Than 4 Hoppers"  # Resins
+			,5: ""  # Color
+			,6: "<html>Into Barrier<br>Single Layer"  # Barrier
+			,7: ""  # Purge
+			,8: ""  # Seal
+			,9: "<html>Air Slitter<br>Blade Change<br>Into/Out of Venter<br>Planned Downtime"  # Equipment
+			,10: '<html>2" or less<br>Stay in<br>PMDO Mode'  # MDO
+		}
+		,3: {  # Changeover Level 4
+			0: "<html>CO4"  # Code
+			,1: ""  # Size
+			,2: ""  # Gauge
+			,3: ""  # Wind
+			,4: "<html>4 Or More Mains<br>8 or More Hoppers"  # Resins
+			,5: "<html>Out of Color<br>Up To 3<br>Extruders"  # Color
+			,6: "<html>Into Barrier<br>Multi-Layer"  # Barrier
+			,7: "<html>1 Extruder<br>Non-Barrier"  # Purge
+			,8: "<html>Bagger<br>Seal<br>Change"  # Seal
+			,9: "<html>Into/Out of Printer<br>Lane Treat Setup<br>In/Out of Gussets<br>Vfolder or<br>CMD Adjustments"  # Equipment
+			,10: '<html>Size Change<br>above 2" to 12"<br>Out of<br>PMDO Mode<br>Re-Dial In TD'  # MDO
+		}
+		,4: {  # Changeover Level 5
+			0: "<html>CO5"  # Code
+			,1: ""  # Size
+			,2: ""  # Gauge
+			,3: ""  # Wind
+			,4: ""  # Resins
+			,5: "<html>Out of Color<br>More Than 3<br>Extruders"  # Color
+			,6: "<html>Out of<br>Barrier<br>Single layer"  # Barrier
+			,7: "<html>2 or More<br>Extruders<br>Non-Barrier"  # Purge
+			,8: ""  # Seal
+			,9: "<html>Equipment Changes<br>With or Without<br>Line Downtime"  # Equipment
+			,10: '<html>Above 12"<br>Out of<br>PMDO Mode<br>All Blend<br>Changes'  # MDO
+		}
+		,5: {  # Changeover Level 6
+			0: "<html>CO6"  # Code
+			,1: ""  # Size
+			,2: ""  # Gauge
+			,3: ""  # Wind
+			,4: "<html>Purge Bio Material<br>Any Extruder"  # Resins
+			,5: ""  # Color
+			,6: "<html>Out of Barrier<br>Multi-Layer"  # Barrier
+			,7: ""  # Purge
+			,8: ""  # Seal
+			,9: "<html>Line Overhaul<br>Non-Routine<br>Equipment Changes<br>Full Line Cleaning"  # Equipment
+			,10: "<html>Into/Out of<br>MDO<br>Purge In/Out<br>MDO Cleaning"  # MDO
+		}
+	}
+
+	if colIndex > 0 and self.parent.selectedCells.getValueAt(rowIndex,colIndex):
+		background = "yellow"
+	elif rowView % 2 == 0:
+		background = "#D0D8e8"
+	else:
+		background = "e9edf4"
+
+	columnNames = ["Code","Size","Gauge","Wind","Resins","Color","Barrier","Purge","Seal","Equip","MDO"]
+	columnWidths = [75,	185,	185,	125,	250,	175,	  175,	 150,	100,	250,	200]
+	defaultColumnWidth = 100
+	if rowIndex == 0:
+		if colIndex < len(columnWidths):
+			# Set the columns to a fixed size as they are painted
+			self.table.columnModel.getColumn(colIndex).minWidth = columnWidths[colIndex]
+			self.table.columnModel.getColumn(colIndex).maxWidth = columnWidths[colIndex]
+			self.table.columnModel.getColumn(colIndex).width = columnWidths[colIndex]
+		else:
+			# Set any columns not specified to a default width
+			self.table.columnModel.getColumn(colIndex).minWidth = defaultColumnWidth
+			self.table.columnModel.getColumn(colIndex).maxWidth = defaultColumnWidth
+			self.table.columnModel.getColumn(colIndex).width = defaultColumnWidth
+	config_data = {
+		"background": background
+		,"text": blown_data[rowIndex][colIndex]
+	}
+
+
+	return config_data
+
+
 def tbl_changeover_configureHeaderStyle(self, colIndex, colName):
 	from javax.swing import SwingConstants
 	return {
@@ -251,4 +377,5 @@ def tbl_changeover_onMouseClick(self, rowIndex, colIndex, colName, value, event)
 						selectedCells = system.dataset.setValue(selectedCells, rowID, colIndex, currentValue)
 			self.parent.selectedCells = selectedCells
 		getChangeoverLevel(event)
+		system.db.refresh(self,"data")
 	return

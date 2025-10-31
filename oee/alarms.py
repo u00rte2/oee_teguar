@@ -87,9 +87,10 @@ def btnAcknowledgeAlarms(event):
 	initialPaths = {
 		"orderNumber": "{provider}Line{lineNumber}/Order/Order Number".format(provider=provider, lineNumber=rc.lineNumber),
 		"productCode": "{provider}Line{lineNumber}/Product/Product".format(provider=provider, lineNumber=rc.lineNumber),
-		"densityTolerance": "{provider}OT/Density Deviation Tolerance".format(provider=provider),
-		"recipients": "{provider}OT/Deviation Acknowledge Recipients".format(provider=provider)
+		"densityTolerance": "{provider}OT/Density Deviation Tolerance".format(provider=provider)
+		# "recipients": "{provider}OT/Deviation Acknowledge Recipients".format(provider=provider)
 	}
+	recipients = "zach.merrilees@cnginc.com"
 	# read blocking for initial values
 	initialValues = readBlocking(initialPaths)
 	body = getBody()
@@ -113,7 +114,7 @@ def btnAcknowledgeAlarms(event):
 			body += append_body(html_params)
 		elif "':/alm:Layer Thickness Deviation' "in almSource:
 			alarmName = "Layer Thickness Deviation"
-			paths = getPaths(alarmName)
+			paths = getPaths(alarmName,almSource)
 			values = readBlocking(paths)
 			html_params = {"label": values["label"],
 						"material": values["material"],
@@ -126,7 +127,7 @@ def btnAcknowledgeAlarms(event):
 			body += append_body(html_params)
 		elif ':/alm:Venture Thickness Deviation' in almSource:
 			alarmName = "Venture Thickness Deviation"
-			paths = getPaths(alarmName)
+			paths = getPaths(alarmName,almSource)
 			values = readBlocking(paths)
 			html_params = {"label": values["label"],
 						"material": "",
@@ -139,7 +140,7 @@ def btnAcknowledgeAlarms(event):
 			body += append_body(html_params)
 		elif ':/alm:Missing Material' in almSource:
 			alarmName = "Missing Material"
-			paths = getPaths(alarmName)
+			paths = getPaths(alarmName,almSource)
 			values = readBlocking(paths)
 			html_params = {"label": values["label"],
 						"material": values[ "currentValue" ],
@@ -152,7 +153,7 @@ def btnAcknowledgeAlarms(event):
 			body += append_body(html_params)
 		elif ':/alm:Density Deviation' in almSource:
 			alarmName = "Density Deviation"
-			paths = getPaths(alarmName)
+			paths = getPaths(alarmName,almSource)
 			values = readBlocking(paths)
 			html_params = {"label": values["label"],
 						"material": values["material"],
@@ -165,7 +166,7 @@ def btnAcknowledgeAlarms(event):
 			body += append_body(html_params)
 		else:
 			alarmName = "Extra Materials"
-			paths = getPaths(alarmName)
+			paths = getPaths(alarmName,almSource)
 			values = readBlocking(paths)
 			html_params = {"label": values["label"],
 						"material": values["currentValue"],
@@ -183,8 +184,8 @@ def btnAcknowledgeAlarms(event):
 						 fromAddr = 'ignition@cnginc.com',
 						 subject = 'Venture Deviation Alarm(s) Acknowledged',
 						 body = body,
-						 to = [ row[ "emailAddress" ] for row in system.dataset.toPyDataSet(initialValues[ "recipients" ]) ],
+						 #to = [ row[ "emailAddress" ] for row in system.dataset.toPyDataSet(initialValues[ "recipients" ]) ],
+						 to=[ recipients ],
 						 smtpProfile = 'CharterNEX Email')
-
 	system.nav.closeWindow("Alarms/AcknowledgePopup")
 	return

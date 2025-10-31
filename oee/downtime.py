@@ -225,17 +225,17 @@ def updateChartData():
 								 [chartData,
 								 chartProperties
 								  ])
-	compare_to_live = True
-	if compare_to_live:
-		glass_db = oee.db.get_glass_db()
-		py_live = runQuery(args, glass_db)
-		lastState = py_live.getValueAt(py_live.rowCount - 1,1)
-		chartData = system.dataset.addRow(py_live,[ system.date.now(),lastState ])
-		system.tag.writeBlocking([ "[client]downtime/test_chartData",
-								   "[client]downtime/test_chartProperties" ],
-								 [ chartData,
-								   chartProperties
-								   ])
+	# compare_to_live = True
+	# if compare_to_live:
+	# 	glass_db = oee.db.get_glass_db()
+	# 	py_live = runQuery(args, glass_db)
+	# 	lastState = py_live.getValueAt(py_live.rowCount - 1,1)
+	# 	chartData = system.dataset.addRow(py_live,[ system.date.now(),lastState ])
+	# 	system.tag.writeBlocking([ "[client]downtime/test_chartData",
+	# 							   "[client]downtime/test_chartProperties" ],
+	# 							 [ chartData,
+	# 							   chartProperties
+	# 							   ])
 	return
 
 
@@ -364,6 +364,7 @@ def getChartToolTipText(self,seriesIndex,selectedTimeStamp,timeDiff,selectedStat
 		return "Order Number Not Found"
 
 	if selectedStatus < 1000:
+		# print 'selectedStatus',selectedStatus
 		# Replace seriesName: "EventCode" with actual event name.
 		events = system.dataset.toPyDataSet(self.parent.downtime)
 		eventName = getEventName(events, selectedStatus)
